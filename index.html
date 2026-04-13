@@ -9,12 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #fdfaf3;
     --bg-grad-1: #fdfaf3;
     --bg-grad-2: #f3ecdc;
     --ink: #1a1f3a;
     --ink-soft: #4a5070;
-    --center: #1a1f4d;
     --c-topiques: #3b6cd1;
     --c-pulsions: #2ea968;
     --c-stades: #e8842a;
@@ -33,11 +31,7 @@
     background: radial-gradient(ellipse at center, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
   }
 
-  #app {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  #app { height: 100vh; display: flex; flex-direction: column; }
 
   header {
     padding: 1.2rem 2rem;
@@ -45,7 +39,6 @@
     align-items: center;
     justify-content: space-between;
     z-index: 10;
-    background: linear-gradient(to bottom, rgba(253,250,243,0.95), rgba(253,250,243,0));
     pointer-events: none;
   }
   header > * { pointer-events: auto; }
@@ -55,7 +48,6 @@
     font-weight: 600;
     font-size: 1.6rem;
     letter-spacing: -0.01em;
-    color: var(--ink);
   }
   .title h1 em {
     font-style: italic;
@@ -65,11 +57,7 @@
     background-clip: text;
     color: transparent;
   }
-  .title p {
-    font-size: 0.85rem;
-    color: var(--ink-soft);
-    margin-top: 0.15rem;
-  }
+  .title p { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.15rem; }
 
   #reset {
     font-family: inherit;
@@ -89,22 +77,15 @@
   #reset.visible { opacity: 1; pointer-events: auto; }
   #reset:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(26,31,58,0.12); }
 
-  main {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-  }
+  main { flex: 1; position: relative; overflow: hidden; }
 
-  #mindmap {
-    width: 100%;
-    height: 100%;
-    display: block;
-    cursor: grab;
-  }
+  #mindmap { width: 100%; height: 100%; display: block; }
 
-  /* SVG node styles */
+  /* Branches : on garde les pointer-events actifs même quand atténuées
+     pour pouvoir basculer d'une branche à l'autre sans fermer le panneau */
   .branch { transition: opacity 0.5s ease; }
-  .branch.dimmed { opacity: 0.12; pointer-events: none; }
+  .branch.dimmed { opacity: 0.22; }
+  .branch.dimmed:hover { opacity: 0.55; }
 
   .main-node, .sub-node, .center-node {
     cursor: pointer;
@@ -112,14 +93,10 @@
     transform-origin: center;
     transform-box: fill-box;
   }
-  .main-node:hover, .sub-node:hover {
-    transform: scale(1.06);
-  }
+  .main-node:hover, .sub-node:hover { transform: scale(1.06); }
   .center-node { cursor: default; }
 
-  .node-rect {
-    transition: filter 0.3s;
-  }
+  .node-rect { transition: filter 0.3s; }
   .main-node:hover .node-rect,
   .sub-node:hover .node-rect {
     filter: brightness(1.08) drop-shadow(0 6px 14px rgba(26,31,58,0.25));
@@ -137,11 +114,7 @@
     pointer-events: none;
   }
 
-  .connector {
-    fill: none;
-    stroke-linecap: round;
-    transition: stroke-width 0.3s;
-  }
+  .connector { fill: none; stroke-linecap: round; }
 
   /* Side panel */
   #panel {
@@ -182,13 +155,15 @@
   #panelContent {
     padding: 0 2.4rem 3rem;
     margin-top: -2.5rem;
+    transition: opacity 0.25s ease;
   }
+  #panelContent.fading { opacity: 0; }
 
   .content-header {
     padding-top: 1rem;
     padding-bottom: 1.5rem;
     border-bottom: 1px solid rgba(26,31,58,0.08);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
   .eyebrow {
     display: inline-block;
@@ -207,41 +182,50 @@
     font-size: 1.9rem;
     font-weight: 600;
     line-height: 1.15;
-    color: var(--ink);
     margin-bottom: 0.6rem;
   }
-  .lede {
-    color: var(--ink-soft);
-    font-size: 0.98rem;
-    line-height: 1.55;
-  }
+  .lede { color: var(--ink-soft); font-size: 0.98rem; line-height: 1.55; }
 
-  #panelContent section { margin-bottom: 1.8rem; }
+  #panelContent section { margin-top: 1.5rem; }
   #panelContent h3 {
     font-family: 'Fraunces', serif;
     font-size: 1.15rem;
     font-weight: 600;
     color: var(--accent);
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.4rem;
     padding-left: 0.8rem;
     border-left: 3px solid var(--accent);
   }
-  #panelContent dl { display: block; }
-  #panelContent dt {
+
+  .concept {
+    padding: 0.7rem 1rem;
+    margin: 0.4rem -1rem 0;
+    border-radius: 10px;
+    border-left: 3px solid transparent;
+    transition: background 0.4s ease, border-color 0.4s ease;
+  }
+  .concept h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.97rem;
     font-weight: 600;
     color: var(--ink);
-    margin-top: 0.9rem;
-    font-size: 0.97rem;
+    margin-bottom: 0.25rem;
+    transition: color 0.4s ease;
   }
-  #panelContent dd {
-    color: var(--ink-soft);
-    font-size: 0.92rem;
-    line-height: 1.6;
-    margin-left: 0;
-    margin-top: 0.2rem;
+  .concept p { color: var(--ink-soft); font-size: 0.92rem; line-height: 1.6; }
+  .concept p em { color: var(--accent); font-style: italic; font-weight: 500; }
+  .concept.highlighted {
+    background: color-mix(in srgb, var(--accent) 11%, transparent);
+    border-left-color: var(--accent);
+    animation: pulseHighlight 1.6s ease;
   }
-  #panelContent dd em { color: var(--accent); font-style: italic; font-weight: 500; }
-  #panelContent .quote {
+  .concept.highlighted h4 { color: var(--accent); }
+  @keyframes pulseHighlight {
+    0%   { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+    100% { background: color-mix(in srgb, var(--accent) 11%, transparent); }
+  }
+
+  .quote {
     font-family: 'Fraunces', serif;
     font-style: italic;
     font-size: 1rem;
@@ -251,11 +235,9 @@
     margin: 1.2rem 0;
   }
 
-  /* Scrollbar */
   #panel::-webkit-scrollbar { width: 8px; }
   #panel::-webkit-scrollbar-thumb { background: rgba(26,31,58,0.15); border-radius: 4px; }
 
-  /* Footer hint */
   .hint {
     position: absolute;
     bottom: 1.5rem;
@@ -270,6 +252,8 @@
     border: 1px solid rgba(26,31,58,0.08);
     transition: opacity 0.4s;
     pointer-events: none;
+    text-align: center;
+    max-width: 90%;
   }
   .hint.hidden { opacity: 0; }
 
@@ -277,7 +261,7 @@
     header { padding: 0.8rem 1rem; }
     .title h1 { font-size: 1.2rem; }
     .title p { font-size: 0.75rem; }
-    #panel { width: 100%; max-width: 100%; }
+    #panel { width: 100%; max-width: 100%; min-width: auto; }
     #panelContent { padding: 0 1.4rem 2rem; }
   }
 </style>
@@ -307,7 +291,7 @@
         </radialGradient>
       </defs>
     </svg>
-    <div class="hint" id="hint">Cliquez sur une branche pour zoomer</div>
+    <div class="hint" id="hint">Cliquez sur une branche pour zoomer · cliquez sur un sous-concept pour le mettre en évidence</div>
   </main>
 
   <aside id="panel" aria-hidden="true">
@@ -319,21 +303,22 @@
 <script>
 /* ============================================================
    DONNÉES — modifiez cette section pour changer le contenu
+   Chaque sous-concept a une "key" qui correspond au data-key
+   d'un .concept dans le HTML (pour la mise en évidence au clic).
    ============================================================ */
 const BRANCHES = [
   {
     id: 'topiques',
     title: 'Appareil psychique',
-    color: 'var(--c-topiques)',
     colorHex: '#3b6cd1',
     angle: -90,
     children: [
-      { label: 'Inconscient' },
-      { label: 'Préconscient' },
-      { label: 'Conscient' },
-      { label: 'Le Ça' },
-      { label: 'Le Moi' },
-      { label: 'Le Surmoi' }
+      { key: 'inconscient',  label: 'Inconscient' },
+      { key: 'preconscient', label: 'Préconscient' },
+      { key: 'conscient',    label: 'Conscient' },
+      { key: 'ca',           label: 'Le Ça' },
+      { key: 'moi',          label: 'Le Moi' },
+      { key: 'surmoi',       label: 'Le Surmoi' }
     ],
     content: `
       <div class="content-header" style="--accent: #3b6cd1">
@@ -341,41 +326,48 @@ const BRANCHES = [
         <h2>L'appareil psychique</h2>
         <p class="lede">Freud propose deux modélisations successives et complémentaires de la vie psychique : la première décrit des <em>systèmes</em>, la seconde des <em>instances</em>.</p>
       </div>
-      <section>
+      <section style="--accent: #3b6cd1">
         <h3>Première topique (1900) — Les systèmes</h3>
-        <dl>
-          <dt>Inconscient</dt>
-          <dd>Siège des pulsions et des désirs refoulés. Régi par le <em>principe de plaisir</em>. Hors du temps, sans contradiction, soumis au processus primaire.</dd>
-          <dt>Préconscient</dt>
-          <dd>Souvenirs et connaissances momentanément hors conscience, accessibles par un effort d'attention. Zone tampon entre inconscient et conscient.</dd>
-          <dt>Conscient</dt>
-          <dd>Perception immédiate de la réalité externe et interne. Régi par le <em>principe de réalité</em> et le processus secondaire (logique, langage).</dd>
-        </dl>
+        <div class="concept" data-key="inconscient">
+          <h4>Inconscient</h4>
+          <p>Siège des pulsions et des désirs refoulés. Régi par le <em>principe de plaisir</em>. Hors du temps, sans contradiction, soumis au processus primaire.</p>
+        </div>
+        <div class="concept" data-key="preconscient">
+          <h4>Préconscient</h4>
+          <p>Souvenirs et connaissances momentanément hors conscience, accessibles par un effort d'attention. Zone tampon entre inconscient et conscient.</p>
+        </div>
+        <div class="concept" data-key="conscient">
+          <h4>Conscient</h4>
+          <p>Perception immédiate de la réalité externe et interne. Régi par le <em>principe de réalité</em> et le processus secondaire (logique, langage).</p>
+        </div>
       </section>
-      <section>
+      <section style="--accent: #3b6cd1">
         <h3>Seconde topique (1923) — Les instances</h3>
-        <dl>
-          <dt>Le Ça</dt>
-          <dd>Réservoir pulsionnel originaire, entièrement inconscient. Primitif, instinctif, chaotique. Cherche la satisfaction immédiate.</dd>
-          <dt>Le Moi</dt>
-          <dd>Médiateur entre le Ça, le Surmoi et la réalité extérieure. Siège des mécanismes de défense, fonction d'adaptation et de synthèse.</dd>
-          <dt>Le Surmoi</dt>
-          <dd>Intériorisation des interdits parentaux et sociaux. Juge moral, source de culpabilité. Comprend l'<em>Idéal du Moi</em>. Héritier du complexe d'Œdipe.</dd>
-        </dl>
+        <div class="concept" data-key="ca">
+          <h4>Le Ça</h4>
+          <p>Réservoir pulsionnel originaire, entièrement inconscient. Primitif, instinctif, chaotique. Cherche la satisfaction immédiate.</p>
+        </div>
+        <div class="concept" data-key="moi">
+          <h4>Le Moi</h4>
+          <p>Médiateur entre le Ça, le Surmoi et la réalité extérieure. Siège des mécanismes de défense, fonction d'adaptation et de synthèse.</p>
+        </div>
+        <div class="concept" data-key="surmoi">
+          <h4>Le Surmoi</h4>
+          <p>Intériorisation des interdits parentaux et sociaux. Juge moral, source de culpabilité. Comprend l'<em>Idéal du Moi</em>. Héritier du complexe d'Œdipe.</p>
+        </div>
       </section>
-      <p class="quote">« Le moi n'est pas maître dans sa propre maison. »</p>
+      <p class="quote" style="--accent: #3b6cd1">« Le moi n'est pas maître dans sa propre maison. »</p>
     `
   },
   {
     id: 'pulsions',
     title: 'Pulsions',
-    color: 'var(--c-pulsions)',
     colorHex: '#2ea968',
     angle: -30,
     children: [
-      { label: 'Éros' },
-      { label: 'Thanatos' },
-      { label: 'Libido' }
+      { key: 'eros',     label: 'Éros' },
+      { key: 'thanatos', label: 'Thanatos' },
+      { key: 'libido',   label: 'Libido' }
     ],
     content: `
       <div class="content-header" style="--accent: #2ea968">
@@ -383,49 +375,33 @@ const BRANCHES = [
         <h2>La dynamique pulsionnelle</h2>
         <p class="lede">La pulsion est un concept-limite entre le somatique et le psychique : une poussée énergétique qui cherche à se décharger.</p>
       </div>
-      <section>
-        <h3>Éros — Pulsions de vie</h3>
-        <dl>
-          <dt>Définition</dt>
-          <dd>Tendances qui visent l'unification, la liaison, la création et la conservation de la vie.</dd>
-          <dt>Manifestations</dt>
-          <dd>Pulsions d'autoconservation (faim, soif, défense), pulsions sexuelles, élan créateur.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>Thanatos — Pulsions de mort</h3>
-        <dl>
-          <dt>Introduction</dt>
-          <dd>Concept introduit en 1920 dans <em>Au-delà du principe de plaisir</em>.</dd>
-          <dt>Tendance</dt>
-          <dd>Tendance à la destruction, à l'agressivité, et au retour à l'état inorganique.</dd>
-          <dt>Principe de Nirvana</dt>
-          <dd>Réduction des tensions psychiques à zéro — quête d'apaisement absolu.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>La Libido</h3>
-        <dl>
-          <dt>Énergie psychique</dt>
-          <dd>Énergie associée aux pulsions sexuelles. Quantifiable, déplaçable, susceptible d'investissement et de désinvestissement.</dd>
-          <dt>Formes</dt>
-          <dd>Peut être <em>narcissique</em> (investie sur soi) ou <em>objectale</em> (investie sur autrui).</dd>
-        </dl>
+      <section style="--accent: #2ea968">
+        <div class="concept" data-key="eros">
+          <h4>Éros — Pulsions de vie</h4>
+          <p>Tendances qui visent l'unification, la liaison, la création et la conservation de la vie. Comprend les pulsions d'<em>autoconservation</em> (faim, soif, défense), les pulsions sexuelles et l'élan créateur.</p>
+        </div>
+        <div class="concept" data-key="thanatos">
+          <h4>Thanatos — Pulsions de mort</h4>
+          <p>Concept introduit en 1920 dans <em>Au-delà du principe de plaisir</em>. Tendance à la destruction, à l'agressivité, et au retour à l'état inorganique. Régi par le <em>principe de Nirvana</em> — réduction des tensions psychiques à zéro, quête d'apaisement absolu.</p>
+        </div>
+        <div class="concept" data-key="libido">
+          <h4>La Libido</h4>
+          <p>Énergie psychique associée aux pulsions sexuelles. Quantifiable, déplaçable, susceptible d'investissement et de désinvestissement. Peut être <em>narcissique</em> (investie sur soi) ou <em>objectale</em> (investie sur autrui).</p>
+        </div>
       </section>
     `
   },
   {
     id: 'stades',
     title: 'Stades psychosexuels',
-    color: 'var(--c-stades)',
     colorHex: '#e8842a',
     angle: 30,
     children: [
-      { label: 'Oral' },
-      { label: 'Anal' },
-      { label: 'Phallique' },
-      { label: 'Latence' },
-      { label: 'Génital' }
+      { key: 'oral',      label: 'Oral' },
+      { key: 'anal',      label: 'Anal' },
+      { key: 'phallique', label: 'Phallique' },
+      { key: 'latence',   label: 'Latence' },
+      { key: 'genital',   label: 'Génital' }
     ],
     content: `
       <div class="content-header" style="--accent: #e8842a">
@@ -433,56 +409,40 @@ const BRANCHES = [
         <h2>Le développement psychosexuel</h2>
         <p class="lede">Une succession de stades, chacun centré sur une zone érogène dominante. Une fixation à un stade peut structurer la personnalité ou produire une névrose.</p>
       </div>
-      <section>
-        <h3>Stade oral (0–18 mois)</h3>
-        <dl>
-          <dt>Zone érogène</dt><dd>La bouche.</dd>
-          <dt>Enjeu</dt><dd>Sevrage, incorporation, dépendance affective.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>Stade anal (18 mois–3 ans)</h3>
-        <dl>
-          <dt>Zone érogène</dt><dd>Les sphincters.</dd>
-          <dt>Enjeu</dt><dd>Contrôle, rétention/expulsion, apprentissage de la propreté.</dd>
-          <dt>Fixation possible</dt><dd>Caractère obsessionnel, avarice, ordre.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>Stade phallique (3–6 ans)</h3>
-        <dl>
-          <dt>Découverte</dt><dd>Différences anatomiques entre les sexes.</dd>
-          <dt>Complexe d'Œdipe</dt><dd>Désir pour le parent du sexe opposé, rivalité avec celui du même sexe.</dd>
-          <dt>Angoisse de castration</dt><dd>Concept central lié à l'interdit de l'inceste. Sa résolution amène la formation du Surmoi.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>Période de latence (6 ans–puberté)</h3>
-        <dl>
-          <dt>Refoulement</dt><dd>Mise en sommeil des pulsions sexuelles.</dd>
-          <dt>Sublimation</dt><dd>Énergie redirigée vers les apprentissages, la socialisation, la culture.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>Stade génital (puberté et au-delà)</h3>
-        <dl>
-          <dt>Réactivation</dt><dd>Les pulsions sexuelles refont surface à la puberté.</dd>
-          <dt>Sexualité mature</dt><dd>Tournée vers l'autre (objet exogamique), intégrant les stades antérieurs sous le primat génital.</dd>
-        </dl>
+      <section style="--accent: #e8842a">
+        <div class="concept" data-key="oral">
+          <h4>Stade oral (0–18 mois)</h4>
+          <p>Zone érogène : la bouche. Enjeu : sevrage, incorporation, dépendance affective. Une fixation peut produire à l'âge adulte une oralité marquée et une dépendance affective.</p>
+        </div>
+        <div class="concept" data-key="anal">
+          <h4>Stade anal (18 mois–3 ans)</h4>
+          <p>Zone érogène : les sphincters. Enjeu : contrôle, rétention/expulsion, apprentissage de la propreté. Fixation possible : caractère obsessionnel, avarice, ordre.</p>
+        </div>
+        <div class="concept" data-key="phallique">
+          <h4>Stade phallique (3–6 ans)</h4>
+          <p>Découverte des différences anatomiques entre les sexes. Émergence du <em>complexe d'Œdipe</em> (désir pour le parent du sexe opposé, rivalité avec celui du même sexe) et de l'<em>angoisse de castration</em>, concept central lié à l'interdit de l'inceste. Sa résolution amène la formation du Surmoi.</p>
+        </div>
+        <div class="concept" data-key="latence">
+          <h4>Période de latence (6 ans–puberté)</h4>
+          <p>Mise en sommeil des pulsions sexuelles. L'énergie est redirigée par <em>sublimation</em> vers les apprentissages, la socialisation et la culture.</p>
+        </div>
+        <div class="concept" data-key="genital">
+          <h4>Stade génital (puberté et au-delà)</h4>
+          <p>Réactivation pulsionnelle à la puberté. Sexualité mature tournée vers l'autre (objet exogamique), intégrant les stades antérieurs sous le primat génital.</p>
+        </div>
       </section>
     `
   },
   {
     id: 'manifestations',
     title: 'Manifestations',
-    color: 'var(--c-manifestations)',
     colorHex: '#8b3fc3',
     angle: 90,
     children: [
-      { label: 'Rêves' },
-      { label: 'Actes manqués' },
-      { label: 'Lapsus' },
-      { label: 'Symptômes' }
+      { key: 'reves',         label: 'Rêves' },
+      { key: 'actes-manques', label: 'Actes manqués' },
+      { key: 'lapsus',        label: 'Lapsus' },
+      { key: 'symptomes',     label: 'Symptômes' }
     ],
     content: `
       <div class="content-header" style="--accent: #8b3fc3">
@@ -490,52 +450,38 @@ const BRANCHES = [
         <h2>Les manifestations de l'inconscient</h2>
         <p class="lede">L'inconscient n'est pas directement observable : il se révèle par ses formations.</p>
       </div>
-      <section>
-        <h3>Le Rêve</h3>
-        <p class="quote">« La voie royale vers l'inconscient. »</p>
-        <dl>
-          <dt>Contenu manifeste</dt><dd>Le récit du rêve tel qu'il est raconté au réveil.</dd>
-          <dt>Contenu latent</dt><dd>Le désir inconscient caché derrière le récit.</dd>
-          <dt>Travail du rêve</dt><dd>Condensation, déplacement, figuration, élaboration secondaire.</dd>
-          <dt>Principe</dt><dd>Tout rêve est l'accomplissement (déguisé) d'un désir.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>Actes manqués</h3>
-        <dl>
-          <dt>Description</dt><dd>Oublis, maladresses, erreurs apparemment fortuites.</dd>
-          <dt>Sens</dt><dd>Traduisent un conflit inconscient ou un désir refoulé.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>Lapsus</h3>
-        <dl>
-          <dt>Définition</dt><dd>Révélation involontaire d'un désir refoulé par la parole ou l'écriture.</dd>
-          <dt>Formule</dt><dd><em>« On dit ce qu'on ne voulait pas dire. »</em></dd>
-        </dl>
-      </section>
-      <section>
-        <h3>Le symptôme névrotique</h3>
-        <dl>
-          <dt>Nature</dt><dd>Formation de compromis entre le désir refoulé et l'interdit (Surmoi).</dd>
-          <dt>Fonction</dt><dd>Satisfaction substitutive et déguisée. Souffrance subjective révélant un conflit psychique.</dd>
-        </dl>
+      <section style="--accent: #8b3fc3">
+        <div class="concept" data-key="reves">
+          <h4>Le Rêve — « voie royale vers l'inconscient »</h4>
+          <p>On distingue le <em>contenu manifeste</em> (le récit du rêve tel qu'il est raconté au réveil) et le <em>contenu latent</em> (le désir inconscient caché derrière le récit). Le passage de l'un à l'autre s'opère par le <em>travail du rêve</em> : condensation, déplacement, figuration, élaboration secondaire. Tout rêve est l'accomplissement (déguisé) d'un désir.</p>
+        </div>
+        <div class="concept" data-key="actes-manques">
+          <h4>Actes manqués</h4>
+          <p>Oublis, maladresses, erreurs apparemment fortuites. Ils traduisent un conflit inconscient ou un désir refoulé qui se fraye un chemin malgré la censure.</p>
+        </div>
+        <div class="concept" data-key="lapsus">
+          <h4>Lapsus</h4>
+          <p>Révélation involontaire d'un désir refoulé par la parole ou l'écriture. <em>« On dit ce qu'on ne voulait pas dire. »</em></p>
+        </div>
+        <div class="concept" data-key="symptomes">
+          <h4>Le symptôme névrotique</h4>
+          <p>Formation de compromis entre le désir refoulé et l'interdit (Surmoi). Satisfaction substitutive et déguisée. Souffrance subjective révélant un conflit psychique profond.</p>
+        </div>
       </section>
     `
   },
   {
     id: 'defenses',
     title: 'Mécanismes de défense',
-    color: 'var(--c-defenses)',
     colorHex: '#1ab0a8',
     angle: 150,
     children: [
-      { label: 'Refoulement' },
-      { label: 'Déni' },
-      { label: 'Projection' },
-      { label: 'Sublimation' },
-      { label: 'Déplacement' },
-      { label: 'Form. réactionnelle' }
+      { key: 'refoulement',             label: 'Refoulement' },
+      { key: 'deni',                    label: 'Déni' },
+      { key: 'projection',              label: 'Projection' },
+      { key: 'sublimation',             label: 'Sublimation' },
+      { key: 'deplacement',             label: 'Déplacement' },
+      { key: 'formation-reactionnelle', label: 'Form. réactionnelle' }
     ],
     content: `
       <div class="content-header" style="--accent: #1ab0a8">
@@ -543,92 +489,108 @@ const BRANCHES = [
         <h2>Les mécanismes de défense du Moi</h2>
         <p class="lede">Stratégies inconscientes du Moi pour gérer les conflits entre les exigences du Ça, du Surmoi et de la réalité.</p>
       </div>
-      <section>
-        <h3>Les six mécanismes principaux</h3>
-        <dl>
-          <dt>Refoulement</dt>
-          <dd>Mécanisme princeps. Rejet dans l'inconscient de représentations inacceptables.</dd>
-          <dt>Déni</dt>
-          <dd>Refus de reconnaître une réalité traumatisante : la perception elle-même est modifiée.</dd>
-          <dt>Projection</dt>
-          <dd>Attribuer à autrui ses propres pulsions inavouables.</dd>
-          <dt>Sublimation</dt>
-          <dd>Dérivation de l'énergie pulsionnelle vers des buts socialement valorisés (art, science, religion).</dd>
-          <dt>Déplacement</dt>
-          <dd>Détacher l'affect d'une représentation pour le lier à une autre, moins menaçante.</dd>
-          <dt>Formation réactionnelle</dt>
-          <dd>Adopter un comportement opposé au désir refoulé (ex. propreté excessive contre des désirs anaux).</dd>
-        </dl>
+      <section style="--accent: #1ab0a8">
+        <div class="concept" data-key="refoulement">
+          <h4>Refoulement</h4>
+          <p>Mécanisme princeps. Rejet dans l'inconscient de représentations inacceptables pour le Moi.</p>
+        </div>
+        <div class="concept" data-key="deni">
+          <h4>Déni</h4>
+          <p>Refus de reconnaître une réalité traumatisante : la perception elle-même est modifiée pour éviter la confrontation.</p>
+        </div>
+        <div class="concept" data-key="projection">
+          <h4>Projection</h4>
+          <p>Attribuer à autrui ses propres pulsions inavouables pour ne pas avoir à les reconnaître en soi.</p>
+        </div>
+        <div class="concept" data-key="sublimation">
+          <h4>Sublimation</h4>
+          <p>Dérivation de l'énergie pulsionnelle vers des buts socialement valorisés (art, science, religion). Mécanisme considéré comme le plus mature.</p>
+        </div>
+        <div class="concept" data-key="deplacement">
+          <h4>Déplacement</h4>
+          <p>Détacher l'affect d'une représentation pour le lier à une autre, moins menaçante.</p>
+        </div>
+        <div class="concept" data-key="formation-reactionnelle">
+          <h4>Formation réactionnelle</h4>
+          <p>Adopter un comportement opposé au désir refoulé (par exemple : propreté excessive contre des désirs anaux).</p>
+        </div>
       </section>
     `
   },
   {
     id: 'cure',
     title: 'Cure psychanalytique',
-    color: 'var(--c-cure)',
     colorHex: '#d4a017',
     angle: -150,
     children: [
-      { label: 'Association libre' },
-      { label: 'Transfert' },
-      { label: 'Contre-transfert' },
-      { label: 'Résistance' },
-      { label: 'Catharsis' }
+      { key: 'association-libre', label: 'Association libre' },
+      { key: 'transfert',         label: 'Transfert' },
+      { key: 'contre-transfert',  label: 'Contre-transfert' },
+      { key: 'resistance',        label: 'Résistance' },
+      { key: 'catharsis',         label: 'Catharsis' }
     ],
     content: `
       <div class="content-header" style="--accent: #d4a017">
         <span class="eyebrow">Branche 6</span>
         <h2>La cure psychanalytique</h2>
         <p class="lede">La cure vise à rendre conscient ce qui est inconscient.</p>
-        <p class="quote">« Wo Es war, soll Ich werden. » — Là où était le Ça, le Moi doit advenir.</p>
+        <p class="quote" style="--accent: #d4a017">« Wo Es war, soll Ich werden. » — Là où était le Ça, le Moi doit advenir.</p>
       </div>
-      <section>
-        <h3>L'Association libre</h3>
-        <dl>
-          <dt>Règle fondamentale</dt><dd>Le patient dit tout ce qui lui vient à l'esprit, sans censure ni hiérarchie.</dd>
-          <dt>Fonction</dt><dd>Permet le contournement des résistances conscientes.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>Le Transfert</h3>
-        <dl>
-          <dt>Définition</dt><dd>Répétition de sentiments infantiles projetés sur le psychanalyste.</dd>
-          <dt>Formes</dt><dd>Peut être positif (affection) ou négatif (hostilité).</dd>
-          <dt>Rôle</dt><dd>Levier thérapeutique central : on y rejoue les conflits anciens pour les dénouer.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>Le Contre-transfert</h3>
-        <dl>
-          <dt>Définition</dt><dd>Réactions émotionnelles (souvent inconscientes) de l'analyste face au patient.</dd>
-          <dt>Statut</dt><dd>Doit être analysé : à la fois obstacle et instrument de connaissance.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>La Résistance</h3>
-        <dl>
-          <dt>Définition</dt><dd>Forces qui s'opposent à l'émergence de l'inconscient dans la cure.</dd>
-          <dt>Manifestations</dt><dd>Silences, oublis, retards, intellectualisation.</dd>
-        </dl>
-      </section>
-      <section>
-        <h3>La Catharsis</h3>
-        <dl>
-          <dt>Définition</dt><dd>Libération émotionnelle liée au rappel d'un souvenir traumatique.</dd>
-          <dt>Histoire</dt><dd>Méthode initiale (avec Breuer) avant l'élaboration de l'association libre.</dd>
-        </dl>
+      <section style="--accent: #d4a017">
+        <div class="concept" data-key="association-libre">
+          <h4>L'Association libre</h4>
+          <p>Règle fondamentale de la cure : le patient dit tout ce qui lui vient à l'esprit, sans censure ni hiérarchie. Permet le contournement des résistances conscientes.</p>
+        </div>
+        <div class="concept" data-key="transfert">
+          <h4>Le Transfert</h4>
+          <p>Répétition de sentiments infantiles projetés sur le psychanalyste. Peut être <em>positif</em> (affection) ou <em>négatif</em> (hostilité). Levier thérapeutique central : on y rejoue les conflits anciens pour les dénouer.</p>
+        </div>
+        <div class="concept" data-key="contre-transfert">
+          <h4>Le Contre-transfert</h4>
+          <p>Réactions émotionnelles (souvent inconscientes) de l'analyste face au patient. Doit être analysé : à la fois obstacle et instrument de connaissance.</p>
+        </div>
+        <div class="concept" data-key="resistance">
+          <h4>La Résistance</h4>
+          <p>Forces qui s'opposent à l'émergence de l'inconscient dans la cure. Manifestations : silences, oublis, retards, intellectualisation. Son analyse est au cœur du travail thérapeutique.</p>
+        </div>
+        <div class="concept" data-key="catharsis">
+          <h4>La Catharsis</h4>
+          <p>Libération émotionnelle liée au rappel d'un souvenir traumatique. Méthode initiale (avec Breuer) avant l'élaboration de l'association libre.</p>
+        </div>
       </section>
     `
   }
 ];
 
 /* ============================================================
-   GÉOMÉTRIE & RENDU SVG
+   GÉOMÉTRIE — layout en repère LOCAL (perpendiculaire / radial)
+   pour éviter toute superposition entre branches voisines.
    ============================================================ */
-const VB_W = 1800, VB_H = 1200;
+const VB_W = 1800, VB_H = 1500;
 const CENTER = { x: VB_W / 2, y: VB_H / 2 };
 const MAIN_DIST = 320;
-const SUB_DIST = 250;
+
+// Pour chaque taille de branche : positions des sous-noeuds en repère local
+// (u = perpendiculaire au rayon, v = vers l'extérieur depuis le noeud principal)
+const LAYOUTS = {
+  3: [
+    { u: -210, v: 250 }, { u: 0, v: 250 }, { u: 210, v: 250 }
+  ],
+  4: [
+    { u: -160, v: 210 }, { u: 160, v: 210 },
+    { u: -160, v: 350 }, { u: 160, v: 350 }
+  ],
+  5: [
+    { u: -200, v: 230 }, { u: 0, v: 230 }, { u: 200, v: 230 },
+    { u: -110, v: 365 }, { u: 110, v: 365 }
+  ],
+  // 2 colonnes × 3 rangées (col-major pour grouper les Topiques)
+  6: [
+    { u: -185, v: 200 }, { u: -185, v: 310 }, { u: -185, v: 420 },
+    { u:  185, v: 200 }, { u:  185, v: 310 }, { u:  185, v: 420 }
+  ]
+};
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svg = document.getElementById('mindmap');
 svg.setAttribute('viewBox', `0 0 ${VB_W} ${VB_H}`);
@@ -647,48 +609,46 @@ function pos(angleDeg, dist, origin = CENTER) {
   };
 }
 
-// Compute positions for all branches
+// Calcule les positions des sous-noeuds de toutes les branches
 BRANCHES.forEach(branch => {
   branch.mainPos = pos(branch.angle, MAIN_DIST);
-  const n = branch.children.length;
-  // Fan width adapts to number of children
-  const fan = Math.min(120, 30 + n * 14);
+  const a = branch.angle;
+  const ux = Math.cos(rad(a + 90));
+  const uy = Math.sin(rad(a + 90));
+  const vx = Math.cos(rad(a));
+  const vy = Math.sin(rad(a));
+  const layout = LAYOUTS[branch.children.length];
   branch.children.forEach((child, i) => {
-    const offset = n === 1 ? 0 : (-fan / 2 + (fan / (n - 1)) * i);
-    const subAngle = branch.angle + offset;
-    child.pos = pos(subAngle, MAIN_DIST + SUB_DIST);
-    child.angle = subAngle;
+    const { u, v } = layout[i];
+    child.pos = {
+      x: branch.mainPos.x + u * ux + v * vx,
+      y: branch.mainPos.y + u * uy + v * vy
+    };
   });
 });
 
-// --- Build the SVG ---
-const defs = svg.querySelector('defs');
-
-// Connectors first (so they go behind nodes)
-const connectorsLayer = el('g', { class: 'connectors' }, svg);
+// --- Construction du SVG ---
 const nodesLayer = el('g', { class: 'nodes' }, svg);
 
 BRANCHES.forEach(branch => {
   const branchGroup = el('g', { class: 'branch', 'data-id': branch.id }, nodesLayer);
-
-  // Connector center → main
   const cx = CENTER.x, cy = CENTER.y;
   const mx = branch.mainPos.x, my = branch.mainPos.y;
-  const midx = (cx + mx) / 2, midy = (cy + my) / 2;
+
+  // Connecteur centre → noeud principal
   el('path', {
-    d: `M ${cx} ${cy} Q ${midx} ${midy} ${mx} ${my}`,
+    d: `M ${cx} ${cy} Q ${(cx+mx)/2} ${(cy+my)/2} ${mx} ${my}`,
     class: 'connector',
     stroke: branch.colorHex,
     'stroke-width': 5,
     'stroke-opacity': 0.55
   }, branchGroup);
 
-  // Connectors main → sub
+  // Connecteurs noeud principal → sous-noeuds
   branch.children.forEach(child => {
     const sx = child.pos.x, sy = child.pos.y;
-    const mmx = (mx + sx) / 2, mmy = (my + sy) / 2;
     el('path', {
-      d: `M ${mx} ${my} Q ${mmx} ${mmy} ${sx} ${sy}`,
+      d: `M ${mx} ${my} Q ${(mx+sx)/2} ${(my+sy)/2} ${sx} ${sy}`,
       class: 'connector',
       stroke: branch.colorHex,
       'stroke-width': 2.5,
@@ -696,10 +656,10 @@ BRANCHES.forEach(branch => {
     }, branchGroup);
   });
 
-  // Main node
+  // Noeud principal
   const mainGroup = el('g', { class: 'main-node' }, branchGroup);
   el('rect', {
-    x: mx - 130, y: my - 38, width: 260, height: 76,
+    x: mx - 135, y: my - 38, width: 270, height: 76,
     rx: 38, fill: branch.colorHex,
     class: 'node-rect',
     filter: 'url(#softShadow)'
@@ -708,18 +668,20 @@ BRANCHES.forEach(branch => {
     x: mx, y: my + 8,
     'text-anchor': 'middle',
     fill: 'white',
-    'font-size': 24,
+    'font-size': 23,
     class: 'node-text'
   }, mainGroup);
   t1.textContent = branch.title;
-  mainGroup.addEventListener('click', e => { e.stopPropagation(); openBranch(branch); });
+  mainGroup.addEventListener('click', e => {
+    e.stopPropagation();
+    openBranch(branch);
+  });
 
-  // Sub-nodes
+  // Sous-noeuds
   branch.children.forEach(child => {
     const sx = child.pos.x, sy = child.pos.y;
     const subGroup = el('g', { class: 'sub-node' }, branchGroup);
-    // Estimate width from label length
-    const w = Math.max(140, child.label.length * 11 + 30);
+    const w = Math.max(140, child.label.length * 10 + 36);
     el('rect', {
       x: sx - w / 2, y: sy - 26, width: w, height: 52,
       rx: 26, fill: 'white',
@@ -735,40 +697,40 @@ BRANCHES.forEach(branch => {
       class: 'node-text'
     }, subGroup);
     t2.textContent = child.label;
-    subGroup.addEventListener('click', e => { e.stopPropagation(); openBranch(branch); });
+    subGroup.addEventListener('click', e => {
+      e.stopPropagation();
+      openBranch(branch, child.key);
+    });
   });
 });
 
-// Center node (added last so it's on top)
+// Noeud central (au-dessus de tout le reste)
 const centerGroup = el('g', { class: 'center-node' }, nodesLayer);
 el('circle', {
-  cx: CENTER.x, cy: CENTER.y, r: 105,
+  cx: CENTER.x, cy: CENTER.y, r: 110,
   fill: 'url(#centerGrad)',
   filter: 'url(#softShadow)'
 }, centerGroup);
-const ct1 = el('text', {
+el('text', {
   x: CENTER.x, y: CENTER.y - 8,
   'text-anchor': 'middle',
   fill: 'white',
-  'font-size': 26,
+  'font-size': 28,
   class: 'center-text'
-}, centerGroup);
-ct1.textContent = 'Pensée';
-const ct2 = el('text', {
-  x: CENTER.x, y: CENTER.y + 24,
+}, centerGroup).textContent = 'Pensée';
+el('text', {
+  x: CENTER.x, y: CENTER.y + 26,
   'text-anchor': 'middle',
   fill: 'white',
-  'font-size': 26,
+  'font-size': 28,
   'font-style': 'italic',
   class: 'center-text'
-}, centerGroup);
-ct2.textContent = 'de Freud';
+}, centerGroup).textContent = 'de Freud';
 
-// Compute bounding box for each branch (after rendering)
+// Bbox de chaque branche (pour calculer le zoom)
 BRANCHES.forEach(branch => {
   const g = nodesLayer.querySelector(`[data-id="${branch.id}"]`);
-  const bbox = g.getBBox();
-  branch.bbox = bbox;
+  branch.bbox = g.getBBox();
 });
 
 /* ============================================================
@@ -788,6 +750,8 @@ window.addEventListener('resize', () => {
   if (!focused) {
     currentVB = computeFitVB();
     svg.setAttribute('viewBox', `${currentVB.x} ${currentVB.y} ${currentVB.w} ${currentVB.h}`);
+  } else {
+    animateViewBox(viewBoxForBranch(focused), 300);
   }
 });
 
@@ -821,10 +785,9 @@ function viewBoxForBranch(branch) {
   const rect = svg.getBoundingClientRect();
   const aspect = rect.width / rect.height;
 
-  // We want the branch to occupy roughly the LEFT 55% of the visible area
-  // (the right ~45% being covered by the panel)
-  const focusFrac = window.innerWidth < 720 ? 0.95 : 0.55;
-  const padding = 80;
+  // Sur grand écran, le panneau couvre ~45% — on cadre la branche dans le 55% gauche.
+  const focusFrac = window.innerWidth < 720 ? 0.92 : 0.55;
+  const padding = 70;
 
   const targetW = (bbox.width + padding * 2) / focusFrac;
   const targetH = bbox.height + padding * 2;
@@ -838,8 +801,6 @@ function viewBoxForBranch(branch) {
     vbW = targetH * aspect;
   }
 
-  // Position so that bbox center is at focusFrac/2 of the viewBox horizontally,
-  // and centered vertically.
   const cx = bbox.x + bbox.width / 2;
   const cy = bbox.y + bbox.height / 2;
   const vbX = cx - vbW * (focusFrac / 2);
@@ -858,20 +819,61 @@ const resetBtn = document.getElementById('reset');
 const closeBtn = document.getElementById('closePanel');
 const hint = document.getElementById('hint');
 
-function openBranch(branch) {
+function highlightConcept(conceptKey, scrollDelay = 100) {
+  panelContent.querySelectorAll('.concept').forEach(c => c.classList.remove('highlighted'));
+  if (!conceptKey) return;
+  const target = panelContent.querySelector(`[data-key="${conceptKey}"]`);
+  if (!target) return;
+  // Re-déclenche l'animation : on retire/ajoute la classe
+  target.classList.remove('highlighted');
+  // eslint-disable-next-line no-unused-expressions
+  target.offsetWidth; // force reflow
+  target.classList.add('highlighted');
+  setTimeout(() => {
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, scrollDelay);
+}
+
+function openBranch(branch, conceptKey = null) {
+  const isFirstOpen = !focused;
+  const isSwitch = focused && focused.id !== branch.id;
+  const isSameBranch = focused && focused.id === branch.id;
+
   focused = branch;
   hint.classList.add('hidden');
-  // Dim other branches
+
+  // Atténue les autres branches, met en avant celle-ci
   document.querySelectorAll('.branch').forEach(g => {
     if (g.dataset.id !== branch.id) g.classList.add('dimmed');
     else g.classList.remove('dimmed');
   });
-  // Animate to branch
+
+  // Anime le viewBox vers la branche
   animateViewBox(viewBoxForBranch(branch));
-  // Open panel slightly after zoom starts
-  panelContent.innerHTML = branch.content;
-  panelContent.scrollTop = 0;
-  setTimeout(() => panel.classList.add('open'), 250);
+
+  if (isSameBranch) {
+    // Même branche : juste mettre à jour la mise en évidence
+    highlightConcept(conceptKey, 100);
+  } else if (isSwitch) {
+    // Bascule entre branches : fade out → swap → fade in
+    panelContent.classList.add('fading');
+    setTimeout(() => {
+      panelContent.innerHTML = branch.content;
+      panelContent.scrollTop = 0;
+      panelContent.classList.remove('fading');
+      if (conceptKey) highlightConcept(conceptKey, 350);
+    }, 220);
+  } else {
+    // Première ouverture
+    panelContent.innerHTML = branch.content;
+    panelContent.scrollTop = 0;
+    setTimeout(() => panel.classList.add('open'), 250);
+    if (conceptKey) {
+      // On laisse le panneau s'ouvrir avant de scroller
+      setTimeout(() => highlightConcept(conceptKey, 0), 700);
+    }
+  }
+
   resetBtn.classList.add('visible');
 }
 
@@ -888,12 +890,11 @@ closeBtn.addEventListener('click', resetView);
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && focused) resetView();
 });
-// Click on background (not on a node) also resets
 svg.addEventListener('click', e => {
   if (focused && e.target === svg) resetView();
 });
 
-// Subtle entrance animation
+// Petite animation d'entrée
 nodesLayer.style.opacity = '0';
 nodesLayer.style.transition = 'opacity 0.8s ease';
 requestAnimationFrame(() => { nodesLayer.style.opacity = '1'; });
