@@ -1,7 +1,902 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Pensée de Freud — Carte mentale interactive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdfaf3;
+    --bg-grad-1: #fdfaf3;
+    --bg-grad-2: #f3ecdc;
+    --ink: #1a1f3a;
+    --ink-soft: #4a5070;
+    --center: #1a1f4d;
+    --c-topiques: #3b6cd1;
+    --c-pulsions: #2ea968;
+    --c-stades: #e8842a;
+    --c-manifestations: #8b3fc3;
+    --c-defenses: #1ab0a8;
+    --c-cure: #d4a017;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--ink);
+    background: radial-gradient(ellipse at center, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+  }
+
+  #app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+    background: linear-gradient(to bottom, rgba(253,250,243,0.95), rgba(253,250,243,0));
+    pointer-events: none;
+  }
+  header > * { pointer-events: auto; }
+
+  .title h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.6rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .title h1 em {
+    font-style: italic;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--c-topiques), var(--c-manifestations));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .title p {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    margin-top: 0.15rem;
+  }
+
+  #reset {
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink);
+    background: white;
+    border: 1px solid rgba(26,31,58,0.15);
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(26,31,58,0.06);
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #reset.visible { opacity: 1; pointer-events: auto; }
+  #reset:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(26,31,58,0.12); }
+
+  main {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #mindmap {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+  }
+
+  /* SVG node styles */
+  .branch { transition: opacity 0.5s ease; }
+  .branch.dimmed { opacity: 0.12; pointer-events: none; }
+
+  .main-node, .sub-node, .center-node {
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(.2,.9,.3,1.2);
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  .main-node:hover, .sub-node:hover {
+    transform: scale(1.06);
+  }
+  .center-node { cursor: default; }
+
+  .node-rect {
+    transition: filter 0.3s;
+  }
+  .main-node:hover .node-rect,
+  .sub-node:hover .node-rect {
+    filter: brightness(1.08) drop-shadow(0 6px 14px rgba(26,31,58,0.25));
+  }
+
+  .node-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    pointer-events: none;
+    user-select: none;
+  }
+  .center-text {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    pointer-events: none;
+  }
+
+  .connector {
+    fill: none;
+    stroke-linecap: round;
+    transition: stroke-width 0.3s;
+  }
+
+  /* Side panel */
+  #panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 42%;
+    max-width: 560px;
+    min-width: 360px;
+    height: 100%;
+    background: white;
+    box-shadow: -10px 0 40px rgba(26,31,58,0.12);
+    transform: translateX(100%);
+    transition: transform 0.6s cubic-bezier(.2,.8,.2,1);
+    overflow-y: auto;
+    z-index: 20;
+  }
+  #panel.open { transform: translateX(0); }
+
+  #closePanel {
+    position: sticky;
+    top: 1rem;
+    left: calc(100% - 3rem);
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    border: none;
+    background: rgba(26,31,58,0.06);
+    color: var(--ink);
+    font-size: 1.4rem;
+    cursor: pointer;
+    z-index: 2;
+    transition: background 0.2s;
+    margin-top: 1rem;
+  }
+  #closePanel:hover { background: rgba(26,31,58,0.12); }
+
+  #panelContent {
+    padding: 0 2.4rem 3rem;
+    margin-top: -2.5rem;
+  }
+
+  .content-header {
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(26,31,58,0.08);
+    margin-bottom: 1.5rem;
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    padding: 0.3rem 0.7rem;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border-radius: 999px;
+    margin-bottom: 0.8rem;
+  }
+  .content-header h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 0.6rem;
+  }
+  .lede {
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  #panelContent section { margin-bottom: 1.8rem; }
+  #panelContent h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+    padding-left: 0.8rem;
+    border-left: 3px solid var(--accent);
+  }
+  #panelContent dl { display: block; }
+  #panelContent dt {
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 0.9rem;
+    font-size: 0.97rem;
+  }
+  #panelContent dd {
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    margin-left: 0;
+    margin-top: 0.2rem;
+  }
+  #panelContent dd em { color: var(--accent); font-style: italic; font-weight: 500; }
+  #panelContent .quote {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--ink-soft);
+    border-left: 3px solid var(--accent);
+    padding: 0.4rem 0 0.4rem 1rem;
+    margin: 1.2rem 0;
+  }
+
+  /* Scrollbar */
+  #panel::-webkit-scrollbar { width: 8px; }
+  #panel::-webkit-scrollbar-thumb { background: rgba(26,31,58,0.15); border-radius: 4px; }
+
+  /* Footer hint */
+  .hint {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(8px);
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(26,31,58,0.08);
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .hint.hidden { opacity: 0; }
+
+  @media (max-width: 720px) {
+    header { padding: 0.8rem 1rem; }
+    .title h1 { font-size: 1.2rem; }
+    .title p { font-size: 0.75rem; }
+    #panel { width: 100%; max-width: 100%; }
+    #panelContent { padding: 0 1.4rem 2rem; }
+  }
+</style>
+</head>
 <body>
-  <h1>Mon Espace Interactif</h1>
-  <button onclick="alert('Ça fonctionne !')">Cliquez ici</button>
+<div id="app">
+  <header>
+    <div class="title">
+      <h1>La Pensée de <em>Freud</em></h1>
+      <p>Carte mentale interactive — cliquez sur une branche pour explorer</p>
+    </div>
+    <button id="reset">↺ Vue d'ensemble</button>
+  </header>
+
+  <main>
+    <svg id="mindmap" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+          <feOffset dx="0" dy="3" result="offsetblur"/>
+          <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+          <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <radialGradient id="centerGrad" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#2c3470"/>
+          <stop offset="100%" stop-color="#0e1230"/>
+        </radialGradient>
+      </defs>
+    </svg>
+    <div class="hint" id="hint">Cliquez sur une branche pour zoomer</div>
+  </main>
+
+  <aside id="panel" aria-hidden="true">
+    <button id="closePanel" aria-label="Fermer">×</button>
+    <div id="panelContent"></div>
+  </aside>
+</div>
+
+<script>
+/* ============================================================
+   DONNÉES — modifiez cette section pour changer le contenu
+   ============================================================ */
+const BRANCHES = [
+  {
+    id: 'topiques',
+    title: 'Appareil psychique',
+    color: 'var(--c-topiques)',
+    colorHex: '#3b6cd1',
+    angle: -90,
+    children: [
+      { label: 'Inconscient' },
+      { label: 'Préconscient' },
+      { label: 'Conscient' },
+      { label: 'Le Ça' },
+      { label: 'Le Moi' },
+      { label: 'Le Surmoi' }
+    ],
+    content: `
+      <div class="content-header" style="--accent: #3b6cd1">
+        <span class="eyebrow">Branche 1</span>
+        <h2>L'appareil psychique</h2>
+        <p class="lede">Freud propose deux modélisations successives et complémentaires de la vie psychique : la première décrit des <em>systèmes</em>, la seconde des <em>instances</em>.</p>
+      </div>
+      <section>
+        <h3>Première topique (1900) — Les systèmes</h3>
+        <dl>
+          <dt>Inconscient</dt>
+          <dd>Siège des pulsions et des désirs refoulés. Régi par le <em>principe de plaisir</em>. Hors du temps, sans contradiction, soumis au processus primaire.</dd>
+          <dt>Préconscient</dt>
+          <dd>Souvenirs et connaissances momentanément hors conscience, accessibles par un effort d'attention. Zone tampon entre inconscient et conscient.</dd>
+          <dt>Conscient</dt>
+          <dd>Perception immédiate de la réalité externe et interne. Régi par le <em>principe de réalité</em> et le processus secondaire (logique, langage).</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Seconde topique (1923) — Les instances</h3>
+        <dl>
+          <dt>Le Ça</dt>
+          <dd>Réservoir pulsionnel originaire, entièrement inconscient. Primitif, instinctif, chaotique. Cherche la satisfaction immédiate.</dd>
+          <dt>Le Moi</dt>
+          <dd>Médiateur entre le Ça, le Surmoi et la réalité extérieure. Siège des mécanismes de défense, fonction d'adaptation et de synthèse.</dd>
+          <dt>Le Surmoi</dt>
+          <dd>Intériorisation des interdits parentaux et sociaux. Juge moral, source de culpabilité. Comprend l'<em>Idéal du Moi</em>. Héritier du complexe d'Œdipe.</dd>
+        </dl>
+      </section>
+      <p class="quote">« Le moi n'est pas maître dans sa propre maison. »</p>
+    `
+  },
+  {
+    id: 'pulsions',
+    title: 'Pulsions',
+    color: 'var(--c-pulsions)',
+    colorHex: '#2ea968',
+    angle: -30,
+    children: [
+      { label: 'Éros' },
+      { label: 'Thanatos' },
+      { label: 'Libido' }
+    ],
+    content: `
+      <div class="content-header" style="--accent: #2ea968">
+        <span class="eyebrow">Branche 2</span>
+        <h2>La dynamique pulsionnelle</h2>
+        <p class="lede">La pulsion est un concept-limite entre le somatique et le psychique : une poussée énergétique qui cherche à se décharger.</p>
+      </div>
+      <section>
+        <h3>Éros — Pulsions de vie</h3>
+        <dl>
+          <dt>Définition</dt>
+          <dd>Tendances qui visent l'unification, la liaison, la création et la conservation de la vie.</dd>
+          <dt>Manifestations</dt>
+          <dd>Pulsions d'autoconservation (faim, soif, défense), pulsions sexuelles, élan créateur.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Thanatos — Pulsions de mort</h3>
+        <dl>
+          <dt>Introduction</dt>
+          <dd>Concept introduit en 1920 dans <em>Au-delà du principe de plaisir</em>.</dd>
+          <dt>Tendance</dt>
+          <dd>Tendance à la destruction, à l'agressivité, et au retour à l'état inorganique.</dd>
+          <dt>Principe de Nirvana</dt>
+          <dd>Réduction des tensions psychiques à zéro — quête d'apaisement absolu.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>La Libido</h3>
+        <dl>
+          <dt>Énergie psychique</dt>
+          <dd>Énergie associée aux pulsions sexuelles. Quantifiable, déplaçable, susceptible d'investissement et de désinvestissement.</dd>
+          <dt>Formes</dt>
+          <dd>Peut être <em>narcissique</em> (investie sur soi) ou <em>objectale</em> (investie sur autrui).</dd>
+        </dl>
+      </section>
+    `
+  },
+  {
+    id: 'stades',
+    title: 'Stades psychosexuels',
+    color: 'var(--c-stades)',
+    colorHex: '#e8842a',
+    angle: 30,
+    children: [
+      { label: 'Oral' },
+      { label: 'Anal' },
+      { label: 'Phallique' },
+      { label: 'Latence' },
+      { label: 'Génital' }
+    ],
+    content: `
+      <div class="content-header" style="--accent: #e8842a">
+        <span class="eyebrow">Branche 3</span>
+        <h2>Le développement psychosexuel</h2>
+        <p class="lede">Une succession de stades, chacun centré sur une zone érogène dominante. Une fixation à un stade peut structurer la personnalité ou produire une névrose.</p>
+      </div>
+      <section>
+        <h3>Stade oral (0–18 mois)</h3>
+        <dl>
+          <dt>Zone érogène</dt><dd>La bouche.</dd>
+          <dt>Enjeu</dt><dd>Sevrage, incorporation, dépendance affective.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Stade anal (18 mois–3 ans)</h3>
+        <dl>
+          <dt>Zone érogène</dt><dd>Les sphincters.</dd>
+          <dt>Enjeu</dt><dd>Contrôle, rétention/expulsion, apprentissage de la propreté.</dd>
+          <dt>Fixation possible</dt><dd>Caractère obsessionnel, avarice, ordre.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Stade phallique (3–6 ans)</h3>
+        <dl>
+          <dt>Découverte</dt><dd>Différences anatomiques entre les sexes.</dd>
+          <dt>Complexe d'Œdipe</dt><dd>Désir pour le parent du sexe opposé, rivalité avec celui du même sexe.</dd>
+          <dt>Angoisse de castration</dt><dd>Concept central lié à l'interdit de l'inceste. Sa résolution amène la formation du Surmoi.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Période de latence (6 ans–puberté)</h3>
+        <dl>
+          <dt>Refoulement</dt><dd>Mise en sommeil des pulsions sexuelles.</dd>
+          <dt>Sublimation</dt><dd>Énergie redirigée vers les apprentissages, la socialisation, la culture.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Stade génital (puberté et au-delà)</h3>
+        <dl>
+          <dt>Réactivation</dt><dd>Les pulsions sexuelles refont surface à la puberté.</dd>
+          <dt>Sexualité mature</dt><dd>Tournée vers l'autre (objet exogamique), intégrant les stades antérieurs sous le primat génital.</dd>
+        </dl>
+      </section>
+    `
+  },
+  {
+    id: 'manifestations',
+    title: 'Manifestations',
+    color: 'var(--c-manifestations)',
+    colorHex: '#8b3fc3',
+    angle: 90,
+    children: [
+      { label: 'Rêves' },
+      { label: 'Actes manqués' },
+      { label: 'Lapsus' },
+      { label: 'Symptômes' }
+    ],
+    content: `
+      <div class="content-header" style="--accent: #8b3fc3">
+        <span class="eyebrow">Branche 4</span>
+        <h2>Les manifestations de l'inconscient</h2>
+        <p class="lede">L'inconscient n'est pas directement observable : il se révèle par ses formations.</p>
+      </div>
+      <section>
+        <h3>Le Rêve</h3>
+        <p class="quote">« La voie royale vers l'inconscient. »</p>
+        <dl>
+          <dt>Contenu manifeste</dt><dd>Le récit du rêve tel qu'il est raconté au réveil.</dd>
+          <dt>Contenu latent</dt><dd>Le désir inconscient caché derrière le récit.</dd>
+          <dt>Travail du rêve</dt><dd>Condensation, déplacement, figuration, élaboration secondaire.</dd>
+          <dt>Principe</dt><dd>Tout rêve est l'accomplissement (déguisé) d'un désir.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Actes manqués</h3>
+        <dl>
+          <dt>Description</dt><dd>Oublis, maladresses, erreurs apparemment fortuites.</dd>
+          <dt>Sens</dt><dd>Traduisent un conflit inconscient ou un désir refoulé.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Lapsus</h3>
+        <dl>
+          <dt>Définition</dt><dd>Révélation involontaire d'un désir refoulé par la parole ou l'écriture.</dd>
+          <dt>Formule</dt><dd><em>« On dit ce qu'on ne voulait pas dire. »</em></dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Le symptôme névrotique</h3>
+        <dl>
+          <dt>Nature</dt><dd>Formation de compromis entre le désir refoulé et l'interdit (Surmoi).</dd>
+          <dt>Fonction</dt><dd>Satisfaction substitutive et déguisée. Souffrance subjective révélant un conflit psychique.</dd>
+        </dl>
+      </section>
+    `
+  },
+  {
+    id: 'defenses',
+    title: 'Mécanismes de défense',
+    color: 'var(--c-defenses)',
+    colorHex: '#1ab0a8',
+    angle: 150,
+    children: [
+      { label: 'Refoulement' },
+      { label: 'Déni' },
+      { label: 'Projection' },
+      { label: 'Sublimation' },
+      { label: 'Déplacement' },
+      { label: 'Form. réactionnelle' }
+    ],
+    content: `
+      <div class="content-header" style="--accent: #1ab0a8">
+        <span class="eyebrow">Branche 5</span>
+        <h2>Les mécanismes de défense du Moi</h2>
+        <p class="lede">Stratégies inconscientes du Moi pour gérer les conflits entre les exigences du Ça, du Surmoi et de la réalité.</p>
+      </div>
+      <section>
+        <h3>Les six mécanismes principaux</h3>
+        <dl>
+          <dt>Refoulement</dt>
+          <dd>Mécanisme princeps. Rejet dans l'inconscient de représentations inacceptables.</dd>
+          <dt>Déni</dt>
+          <dd>Refus de reconnaître une réalité traumatisante : la perception elle-même est modifiée.</dd>
+          <dt>Projection</dt>
+          <dd>Attribuer à autrui ses propres pulsions inavouables.</dd>
+          <dt>Sublimation</dt>
+          <dd>Dérivation de l'énergie pulsionnelle vers des buts socialement valorisés (art, science, religion).</dd>
+          <dt>Déplacement</dt>
+          <dd>Détacher l'affect d'une représentation pour le lier à une autre, moins menaçante.</dd>
+          <dt>Formation réactionnelle</dt>
+          <dd>Adopter un comportement opposé au désir refoulé (ex. propreté excessive contre des désirs anaux).</dd>
+        </dl>
+      </section>
+    `
+  },
+  {
+    id: 'cure',
+    title: 'Cure psychanalytique',
+    color: 'var(--c-cure)',
+    colorHex: '#d4a017',
+    angle: -150,
+    children: [
+      { label: 'Association libre' },
+      { label: 'Transfert' },
+      { label: 'Contre-transfert' },
+      { label: 'Résistance' },
+      { label: 'Catharsis' }
+    ],
+    content: `
+      <div class="content-header" style="--accent: #d4a017">
+        <span class="eyebrow">Branche 6</span>
+        <h2>La cure psychanalytique</h2>
+        <p class="lede">La cure vise à rendre conscient ce qui est inconscient.</p>
+        <p class="quote">« Wo Es war, soll Ich werden. » — Là où était le Ça, le Moi doit advenir.</p>
+      </div>
+      <section>
+        <h3>L'Association libre</h3>
+        <dl>
+          <dt>Règle fondamentale</dt><dd>Le patient dit tout ce qui lui vient à l'esprit, sans censure ni hiérarchie.</dd>
+          <dt>Fonction</dt><dd>Permet le contournement des résistances conscientes.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Le Transfert</h3>
+        <dl>
+          <dt>Définition</dt><dd>Répétition de sentiments infantiles projetés sur le psychanalyste.</dd>
+          <dt>Formes</dt><dd>Peut être positif (affection) ou négatif (hostilité).</dd>
+          <dt>Rôle</dt><dd>Levier thérapeutique central : on y rejoue les conflits anciens pour les dénouer.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Le Contre-transfert</h3>
+        <dl>
+          <dt>Définition</dt><dd>Réactions émotionnelles (souvent inconscientes) de l'analyste face au patient.</dd>
+          <dt>Statut</dt><dd>Doit être analysé : à la fois obstacle et instrument de connaissance.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>La Résistance</h3>
+        <dl>
+          <dt>Définition</dt><dd>Forces qui s'opposent à l'émergence de l'inconscient dans la cure.</dd>
+          <dt>Manifestations</dt><dd>Silences, oublis, retards, intellectualisation.</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>La Catharsis</h3>
+        <dl>
+          <dt>Définition</dt><dd>Libération émotionnelle liée au rappel d'un souvenir traumatique.</dd>
+          <dt>Histoire</dt><dd>Méthode initiale (avec Breuer) avant l'élaboration de l'association libre.</dd>
+        </dl>
+      </section>
+    `
+  }
+];
+
+/* ============================================================
+   GÉOMÉTRIE & RENDU SVG
+   ============================================================ */
+const VB_W = 1800, VB_H = 1200;
+const CENTER = { x: VB_W / 2, y: VB_H / 2 };
+const MAIN_DIST = 320;
+const SUB_DIST = 250;
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('mindmap');
+svg.setAttribute('viewBox', `0 0 ${VB_W} ${VB_H}`);
+
+function el(name, attrs = {}, parent = null) {
+  const e = document.createElementNS(SVG_NS, name);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function rad(d) { return d * Math.PI / 180; }
+function pos(angleDeg, dist, origin = CENTER) {
+  return {
+    x: origin.x + Math.cos(rad(angleDeg)) * dist,
+    y: origin.y + Math.sin(rad(angleDeg)) * dist
+  };
+}
+
+// Compute positions for all branches
+BRANCHES.forEach(branch => {
+  branch.mainPos = pos(branch.angle, MAIN_DIST);
+  const n = branch.children.length;
+  // Fan width adapts to number of children
+  const fan = Math.min(120, 30 + n * 14);
+  branch.children.forEach((child, i) => {
+    const offset = n === 1 ? 0 : (-fan / 2 + (fan / (n - 1)) * i);
+    const subAngle = branch.angle + offset;
+    child.pos = pos(subAngle, MAIN_DIST + SUB_DIST);
+    child.angle = subAngle;
+  });
+});
+
+// --- Build the SVG ---
+const defs = svg.querySelector('defs');
+
+// Connectors first (so they go behind nodes)
+const connectorsLayer = el('g', { class: 'connectors' }, svg);
+const nodesLayer = el('g', { class: 'nodes' }, svg);
+
+BRANCHES.forEach(branch => {
+  const branchGroup = el('g', { class: 'branch', 'data-id': branch.id }, nodesLayer);
+
+  // Connector center → main
+  const cx = CENTER.x, cy = CENTER.y;
+  const mx = branch.mainPos.x, my = branch.mainPos.y;
+  const midx = (cx + mx) / 2, midy = (cy + my) / 2;
+  el('path', {
+    d: `M ${cx} ${cy} Q ${midx} ${midy} ${mx} ${my}`,
+    class: 'connector',
+    stroke: branch.colorHex,
+    'stroke-width': 5,
+    'stroke-opacity': 0.55
+  }, branchGroup);
+
+  // Connectors main → sub
+  branch.children.forEach(child => {
+    const sx = child.pos.x, sy = child.pos.y;
+    const mmx = (mx + sx) / 2, mmy = (my + sy) / 2;
+    el('path', {
+      d: `M ${mx} ${my} Q ${mmx} ${mmy} ${sx} ${sy}`,
+      class: 'connector',
+      stroke: branch.colorHex,
+      'stroke-width': 2.5,
+      'stroke-opacity': 0.4
+    }, branchGroup);
+  });
+
+  // Main node
+  const mainGroup = el('g', { class: 'main-node' }, branchGroup);
+  el('rect', {
+    x: mx - 130, y: my - 38, width: 260, height: 76,
+    rx: 38, fill: branch.colorHex,
+    class: 'node-rect',
+    filter: 'url(#softShadow)'
+  }, mainGroup);
+  const t1 = el('text', {
+    x: mx, y: my + 8,
+    'text-anchor': 'middle',
+    fill: 'white',
+    'font-size': 24,
+    class: 'node-text'
+  }, mainGroup);
+  t1.textContent = branch.title;
+  mainGroup.addEventListener('click', e => { e.stopPropagation(); openBranch(branch); });
+
+  // Sub-nodes
+  branch.children.forEach(child => {
+    const sx = child.pos.x, sy = child.pos.y;
+    const subGroup = el('g', { class: 'sub-node' }, branchGroup);
+    // Estimate width from label length
+    const w = Math.max(140, child.label.length * 11 + 30);
+    el('rect', {
+      x: sx - w / 2, y: sy - 26, width: w, height: 52,
+      rx: 26, fill: 'white',
+      stroke: branch.colorHex, 'stroke-width': 2.5,
+      class: 'node-rect',
+      filter: 'url(#softShadow)'
+    }, subGroup);
+    const t2 = el('text', {
+      x: sx, y: sy + 6,
+      'text-anchor': 'middle',
+      fill: branch.colorHex,
+      'font-size': 17,
+      class: 'node-text'
+    }, subGroup);
+    t2.textContent = child.label;
+    subGroup.addEventListener('click', e => { e.stopPropagation(); openBranch(branch); });
+  });
+});
+
+// Center node (added last so it's on top)
+const centerGroup = el('g', { class: 'center-node' }, nodesLayer);
+el('circle', {
+  cx: CENTER.x, cy: CENTER.y, r: 105,
+  fill: 'url(#centerGrad)',
+  filter: 'url(#softShadow)'
+}, centerGroup);
+const ct1 = el('text', {
+  x: CENTER.x, y: CENTER.y - 8,
+  'text-anchor': 'middle',
+  fill: 'white',
+  'font-size': 26,
+  class: 'center-text'
+}, centerGroup);
+ct1.textContent = 'Pensée';
+const ct2 = el('text', {
+  x: CENTER.x, y: CENTER.y + 24,
+  'text-anchor': 'middle',
+  fill: 'white',
+  'font-size': 26,
+  'font-style': 'italic',
+  class: 'center-text'
+}, centerGroup);
+ct2.textContent = 'de Freud';
+
+// Compute bounding box for each branch (after rendering)
+BRANCHES.forEach(branch => {
+  const g = nodesLayer.querySelector(`[data-id="${branch.id}"]`);
+  const bbox = g.getBBox();
+  branch.bbox = bbox;
+});
+
+/* ============================================================
+   ANIMATION DU VIEWBOX (zoom & travelling)
+   ============================================================ */
+function computeFitVB() {
+  const rect = svg.getBoundingClientRect();
+  const aspect = rect.width / rect.height;
+  let w = VB_W, h = VB_H;
+  if (w / h > aspect) { h = w / aspect; }
+  else { w = h * aspect; }
+  return { x: (VB_W - w) / 2, y: (VB_H - h) / 2, w, h };
+}
+let currentVB = computeFitVB();
+svg.setAttribute('viewBox', `${currentVB.x} ${currentVB.y} ${currentVB.w} ${currentVB.h}`);
+window.addEventListener('resize', () => {
+  if (!focused) {
+    currentVB = computeFitVB();
+    svg.setAttribute('viewBox', `${currentVB.x} ${currentVB.y} ${currentVB.w} ${currentVB.h}`);
+  }
+});
+
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+let animId = null;
+function animateViewBox(target, duration = 900) {
+  if (animId) cancelAnimationFrame(animId);
+  const start = { ...currentVB };
+  const startTime = performance.now();
+  function step(now) {
+    const t = Math.min(1, (now - startTime) / duration);
+    const e = easeInOutCubic(t);
+    currentVB = {
+      x: start.x + (target.x - start.x) * e,
+      y: start.y + (target.y - start.y) * e,
+      w: start.w + (target.w - start.w) * e,
+      h: start.h + (target.h - start.h) * e
+    };
+    svg.setAttribute('viewBox', `${currentVB.x} ${currentVB.y} ${currentVB.w} ${currentVB.h}`);
+    if (t < 1) animId = requestAnimationFrame(step);
+    else animId = null;
+  }
+  animId = requestAnimationFrame(step);
+}
+
+function viewBoxForBranch(branch) {
+  const bbox = branch.bbox;
+  const rect = svg.getBoundingClientRect();
+  const aspect = rect.width / rect.height;
+
+  // We want the branch to occupy roughly the LEFT 55% of the visible area
+  // (the right ~45% being covered by the panel)
+  const focusFrac = window.innerWidth < 720 ? 0.95 : 0.55;
+  const padding = 80;
+
+  const targetW = (bbox.width + padding * 2) / focusFrac;
+  const targetH = bbox.height + padding * 2;
+
+  let vbW, vbH;
+  if (targetW / targetH > aspect) {
+    vbW = targetW;
+    vbH = targetW / aspect;
+  } else {
+    vbH = targetH;
+    vbW = targetH * aspect;
+  }
+
+  // Position so that bbox center is at focusFrac/2 of the viewBox horizontally,
+  // and centered vertically.
+  const cx = bbox.x + bbox.width / 2;
+  const cy = bbox.y + bbox.height / 2;
+  const vbX = cx - vbW * (focusFrac / 2);
+  const vbY = cy - vbH / 2;
+
+  return { x: vbX, y: vbY, w: vbW, h: vbH };
+}
+
+/* ============================================================
+   INTERACTIONS
+   ============================================================ */
+let focused = null;
+const panel = document.getElementById('panel');
+const panelContent = document.getElementById('panelContent');
+const resetBtn = document.getElementById('reset');
+const closeBtn = document.getElementById('closePanel');
+const hint = document.getElementById('hint');
+
+function openBranch(branch) {
+  focused = branch;
+  hint.classList.add('hidden');
+  // Dim other branches
+  document.querySelectorAll('.branch').forEach(g => {
+    if (g.dataset.id !== branch.id) g.classList.add('dimmed');
+    else g.classList.remove('dimmed');
+  });
+  // Animate to branch
+  animateViewBox(viewBoxForBranch(branch));
+  // Open panel slightly after zoom starts
+  panelContent.innerHTML = branch.content;
+  panelContent.scrollTop = 0;
+  setTimeout(() => panel.classList.add('open'), 250);
+  resetBtn.classList.add('visible');
+}
+
+function resetView() {
+  focused = null;
+  panel.classList.remove('open');
+  document.querySelectorAll('.branch').forEach(g => g.classList.remove('dimmed'));
+  animateViewBox(computeFitVB());
+  resetBtn.classList.remove('visible');
+}
+
+resetBtn.addEventListener('click', resetView);
+closeBtn.addEventListener('click', resetView);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && focused) resetView();
+});
+// Click on background (not on a node) also resets
+svg.addEventListener('click', e => {
+  if (focused && e.target === svg) resetView();
+});
+
+// Subtle entrance animation
+nodesLayer.style.opacity = '0';
+nodesLayer.style.transition = 'opacity 0.8s ease';
+requestAnimationFrame(() => { nodesLayer.style.opacity = '1'; });
+</script>
 </body>
 </html>
